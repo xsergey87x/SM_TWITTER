@@ -41,7 +41,7 @@ public class TweetDaoMemoryImplementation implements TweetDao {
             tweetStorage.remove(tweetId);
             return true;
         } else {
-            throw new UserDoesNotExistException(" User with ID " + tweetId + "does not exist ");
+            throw new TweetDoesNotExistException(" User with ID " + tweetId + "does not exist ");
         }
     }
 
