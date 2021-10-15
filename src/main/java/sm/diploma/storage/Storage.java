@@ -8,21 +8,22 @@ import java.util.Map;
 
 public class Storage {
 
-    private static final Map<Long, User> userStorage = new HashMap<>();
-    private static final Map<Long, Tweet> tweeStorage = new HashMap<>();
-
     public static long userIdSequence = 0;
-    public static long tweetIdSequence = 0;
+
 
     private Storage() {
-
     }
 
     public static Map<Long, User> getUserStorage() {
-        return userStorage;
+        return Holder.userStorage;
     }
 
     public static Map<Long, Tweet> getTweeStorage() {
-        return tweeStorage;
+        return Holder.tweetStorage;
+    }
+
+    public static class Holder {
+        private static final Map<Long, User> userStorage = new HashMap<>();;
+        private static final Map<Long, Tweet> tweetStorage = new HashMap<>();;
     }
 }
