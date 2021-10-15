@@ -29,6 +29,17 @@ public class Tweet {
         this.retweets = new ArrayList<>();
     }
 
+    public Tweet(Tweet other) {
+        this.tweetId = other.tweetId;
+        this.userId = other.userId;
+        this.referenceTweet = other.referenceTweet;
+        this.datePoster = other.datePoster;
+        this.content = other.content;
+        this.mentionedUsers = other.mentionedUsers;
+        this.likes = other.likes;
+        this.retweets = other.retweets;
+    }
+
     private List<User> parseContentForMentions(String content) {
         return Collections.emptyList();
     }
