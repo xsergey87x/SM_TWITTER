@@ -53,7 +53,7 @@ public class UserDaoImplementation implements UserDao {
             userStorage.remove(userId);
             return true;
         } else {
-            throw new UserDoesNotExistException(" User with ID " + userId + "does not exist ");
+            return false;
         }
     }
 
