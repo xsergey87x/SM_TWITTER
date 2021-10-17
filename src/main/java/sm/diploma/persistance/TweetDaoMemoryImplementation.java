@@ -9,9 +9,11 @@ import java.util.Optional;
 public class TweetDaoMemoryImplementation implements TweetDao {
     @Override
     public Long saveTweet(Tweet tweet) {
-        tweet.setTweetId(tweet.getUserId());
+
+        long newTweeId = ++Storage.tweetIdSequence;
+        tweet.setTweetId(newTweeId);
         Storage.getTweeStorage().put(tweet.getUserId(), createTweetState(tweet));
-        return tweet.getTweetId();
+        return newTweeId;
     }
 
     @Override
@@ -30,7 +32,7 @@ public class TweetDaoMemoryImplementation implements TweetDao {
         if (tweetOptional.isPresent()) {
             Storage.getTweeStorage().put(tweet.getTweetId(), createTweetState(tweet));
         } else {
-            throw new UserDoesNotExistException(" Updated tweet does not exist " + tweet);
+            throw new TweetDoesNotExistException(" Updated tweet does not exist " + tweet);
         }
     }
 

@@ -9,6 +9,7 @@ import java.util.Map;
 public class Storage {
 
     public static long userIdSequence = 0;
+    public static long tweetIdSequence = 0;
 
 
     private Storage() {
@@ -23,7 +24,7 @@ public class Storage {
     }
 
     public static class Holder {
-        private static final Map<Long, User> userStorage = new HashMap<>();;
-        private static final Map<Long, Tweet> tweetStorage = new HashMap<>();;
+        private static final Map<Long, User> userStorage = new HashMap<>();
+        private static final Map<Long, Tweet> tweetStorage = new HashMap<>();
     }
 }
