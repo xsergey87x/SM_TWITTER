@@ -13,13 +13,13 @@ public class UserDaoImplementation implements UserDao {
     public Long save(User user) {
         long newUserId = ++Storage.userIdSequence;
         user.setUserId(newUserId);
-        Storage.getUserStorage().put(user.getUserId(), createUserState(user));
+        Storage.getInstance().getUserStorage().put(user.getUserId(), createUserState(user));
         return newUserId;
     }
 
     @Override
     public Optional<User> findUserById(long userId) {
-        final User persistedUser = Storage.getUserStorage().get(userId);
+        final User persistedUser = Storage.getInstance().getUserStorage().get(userId);
         if (persistedUser != null) {
             User resultUser = createUserState(persistedUser);
             return Optional.of(resultUser);
@@ -30,7 +30,7 @@ public class UserDaoImplementation implements UserDao {
     @Override
     public List<User> getAll() {
         List<User> userList = new ArrayList<>();
-        for (final User user : Storage.getUserStorage().values()) {
+        for (final User user : Storage.getInstance().getUserStorage().values()) {
             userList.add(createUserState(user));
         }
         return userList;
@@ -40,7 +40,7 @@ public class UserDaoImplementation implements UserDao {
     public void updateUser(User user) {
         Optional<User> userOptional = findUserById(user.getUserId());
         if (userOptional.isPresent()) {
-            Storage.getUserStorage().put(user.getUserId(), createUserState(user));
+            Storage.getInstance().getUserStorage().put(user.getUserId(), createUserState(user));
         } else {
             throw new UserDoesNotExistException(" Updated user does not exist " + user);
         }
@@ -48,12 +48,12 @@ public class UserDaoImplementation implements UserDao {
 
     @Override
     public boolean deleteUserById(long userId) {
-        Map<Long, User> userStorage = Storage.getUserStorage();
+        Map<Long, User> userStorage = Storage.getInstance().getUserStorage();
         if (userStorage.containsKey(userId)) {
             userStorage.remove(userId);
             return true;
         } else {
-            throw new UserDoesNotExistException(" User with ID " + userId + "does not exist ");
+            return false;
         }
     }
 
