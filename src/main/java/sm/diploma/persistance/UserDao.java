@@ -2,19 +2,22 @@ package sm.diploma.persistance;
 
 import sm.diploma.model.User;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
 public interface UserDao {
 
-    Long save(User user);
+    Long save(User user) throws SQLException;
 
-    Optional<User> findUserById(long userId);
+    public Long getUserIDFromNickName(String nickName)  throws SQLException;
 
-    List<User> getAll();
+    Optional<User> findUserById(long userId) throws SQLException;
 
-    void updateUser(User user);
+    List<User> getAll() throws SQLException;
 
-    boolean deleteUserById(long userId);
+    void updateUser(User user) throws SQLException;
+
+    boolean deleteUserById(long userId) throws SQLException;
 
 }
