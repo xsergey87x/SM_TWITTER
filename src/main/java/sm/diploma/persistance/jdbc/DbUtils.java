@@ -9,17 +9,8 @@ public class DbUtils {
 
     public static final String TWITTER_DB_URL = "jdbc:sqlite:D:\\JAVA_Hillel\\SM_Diploma\\src\\main\\java\\sm\\diploma\\storage\\myBase";
 
-    public static String getUrl() {
-        return TWITTER_DB_URL;
-    }
-
     public static Connection getConnection() {
-        try {
-            return DriverManager.getConnection(TWITTER_DB_URL);
-        } catch (SQLException throwable) {
-            throwable.printStackTrace();
-            return null;
-        }
+            return getConnection(TWITTER_DB_URL);
     }
 
     public static Connection getConnection(String twitterDbUrl) {
@@ -34,6 +25,16 @@ public class DbUtils {
     public static void closeConnection(Connection connection, Statement statement) {
         try {
             statement.close();
+            connection.close();
+        } catch (SQLException throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    public static void closeConnection(Connection connection, Statement statement, Statement secondStatement) {
+        try {
+            statement.close();
+            secondStatement.close();
             connection.close();
         } catch (SQLException throwable) {
             throwable.printStackTrace();

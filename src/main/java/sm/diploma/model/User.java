@@ -9,13 +9,27 @@ public class User {
     private Long userId;
     private String nickName;
     private final LocalDate dateRegister;
+    private final String userLogin;
     private LocalDate dateOfBirth;
     private String about;
     private List<User> followers;
     private List<User> following;
 
-    public User(String nickName, LocalDate dateOfBirth, String about) {
+    public User(Long userId, String userLogin, String nickName, LocalDate dateOfBirth, LocalDate dateRegister, String about) {
+        this.userId = userId;
+        this.userLogin = userLogin;
         this.nickName = nickName;
+        this.dateRegister = dateRegister;
+        this.dateOfBirth = dateOfBirth;
+        this.about = about;
+        this.followers = new ArrayList<>();
+        this.following = new ArrayList<>();
+
+    }
+
+    public User(String userLogin, String nickName, LocalDate dateOfBirth, String about) {
+        this.nickName = nickName;
+        this.userLogin = userLogin;
         this.dateRegister = LocalDate.now();
         this.dateOfBirth = dateOfBirth;
         this.about = about;
@@ -24,7 +38,8 @@ public class User {
 
     }
 
-    public User(String nickName) {
+    public User(String userLogin,String nickName) {
+        this.userLogin = userLogin;
         this.nickName = nickName;
         this.dateRegister = LocalDate.now();
         this.followers = new ArrayList<>();
@@ -34,6 +49,7 @@ public class User {
 
     public User(User other) {
         this.userId = other.userId;
+        this.userLogin = other.userLogin;
         this.nickName = other.nickName;
         this.dateRegister = other.dateRegister;
         this.dateOfBirth = other.dateOfBirth;
@@ -48,6 +64,10 @@ public class User {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getUserLogin() {
+        return userLogin;
     }
 
     public String getNickName() {
@@ -121,6 +141,8 @@ public class User {
         return "User{" +
                 "userId=" + userId +
                 ", nickName='" + nickName + '\'' +
+                ", dateRegister=" + dateRegister +
+                ", dateOfBirth=" + dateOfBirth +
                 ", about='" + about + '\'' +
                 '}';
     }

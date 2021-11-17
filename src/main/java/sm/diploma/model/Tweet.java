@@ -12,6 +12,7 @@ public class Tweet {
     private Long tweetId;
     private Long userId;
     private Tweet referenceTweet;
+    private Long referenceTweetId;
     private final LocalDate datePoster;
     private final String content;
     private List<User> mentionedUsers;
@@ -23,6 +24,30 @@ public class Tweet {
         this.userId = userId;
         this.referenceTweet = referenceTweet;
         this.datePoster = LocalDate.now();
+        this.content = content;
+        this.mentionedUsers = parseContentForMentions(content);
+        this.likes = new ArrayList<>();
+        this.retweets = new ArrayList<>();
+    }
+
+    public Tweet(Long userId, Tweet referenceTweet, Long referenceTweetId, String content) {
+        this.tweetId = ++tweetSequence;
+        this.userId = userId;
+        this.referenceTweet = referenceTweet;
+        this.referenceTweetId = referenceTweetId;
+        this.datePoster = LocalDate.now();
+        this.content = content;
+        this.mentionedUsers = parseContentForMentions(content);
+        this.likes = new ArrayList<>();
+        this.retweets = new ArrayList<>();
+    }
+
+    public Tweet(Long userId, Long tweetId, Long referenceTweetId, LocalDate dataPoster, String content) {
+        this.userId = userId;
+        this.tweetId = tweetId;
+        this.referenceTweetId = referenceTweetId;
+        this.referenceTweet = null;
+        this.datePoster = dataPoster;
         this.content = content;
         this.mentionedUsers = parseContentForMentions(content);
         this.likes = new ArrayList<>();
@@ -62,6 +87,10 @@ public class Tweet {
 
     public Tweet getReferenceTweet() {
         return referenceTweet;
+    }
+
+    public Long getReferenceTweetId() {
+        return referenceTweetId;
     }
 
     public void setReferenceTweet(Tweet referenceTweet) {
@@ -127,6 +156,8 @@ public class Tweet {
                 "tweetId=" + tweetId +
                 ", userId=" + userId +
                 ", referenceTweet=" + referenceTweet +
+                ", referenceTweetId=" + referenceTweetId +
+                ", datePoster=" + datePoster +
                 ", content='" + content + '\'' +
                 '}';
     }
