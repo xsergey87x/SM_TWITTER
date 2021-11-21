@@ -6,84 +6,86 @@ import sm.diploma.persistance.UserDao;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class UserDaoJdbcImpl implements UserDao {
 
-    private static final String insertUserQuery = "INSERT INTO users (login, nickName, dateRegistered, dateOfBirth, about) VALUES (?, ?, ?, ?, ?);";
-    private static final String updateUserQuery = "UPDATE  users SET nickName = ?, dateRegistered = ?, dateOfBirth = ?, about = ? WHERE login = ?;";
+    private static final String INSERT_USER_QUERY = "INSERT INTO users (login, nickName, dateRegistered, dateOfBirth, about) VALUES (?, ?, ?, ?, ?);";
+    private static final String UPDATE_USER_QUERY = "UPDATE  users SET nickName = ?, dateRegistered = ?, dateOfBirth = ?, about = ? WHERE login = ?;";
+    private static final String SELECT_USER_QUERY = "SELECT MAX(userId) FROM users;";
+    private static final String FIND_USER_QUERY = "SELECT * FROM users WHERE userId = ?;";
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE userId = ?;";
+    private TweetDao tweetDao = new TweetDaoJdbcImpl();
 
     @Override
-    public Long save(User user) throws SQLException {
+    public Long save(User user) {
 
-        String preparedQueryFind = " SELECT * FROM users WHERE login = '" + user.getUserLogin() + "';";
         Long resultId = 0L;
-        Connection connection = DbUtils.getConnection();
-        Statement findStatement = connection.createStatement();
-        PreparedStatement statement = connection.prepareStatement(insertUserQuery);
-        statement.setString(1, user.getUserLogin());
-        statement.setString(2, user.getNickName());
-        statement.setString(3, String.valueOf(user.getDateRegister()));
-        statement.setString(4, String.valueOf(user.getDateOfBirth()));
-        statement.setString(5, user.getAbout());
-        Integer resultSetAdd = statement.executeUpdate();
-        ResultSet resultSetFind = findStatement.executeQuery(preparedQueryFind);
-        while (resultSetFind.next()) {
-            resultId = resultSetFind.getLong("userId");
+        try (Connection connection = DbUtils.getConnection();
+             PreparedStatement statementInsert = connection.prepareStatement(INSERT_USER_QUERY);
+             Statement statementSelect = connection.createStatement();) {
+            statementInsert.setString(1, user.getUserLogin());
+            statementInsert.setString(2, user.getNickName());
+            statementInsert.setString(3, String.valueOf(user.getDateRegister()));
+            statementInsert.setString(4, String.valueOf(user.getDateOfBirth()));
+            statementInsert.setString(5, user.getAbout());
+            Integer resultSetAdd = statementInsert.executeUpdate();
+            ResultSet resultSetFind = statementSelect.executeQuery(SELECT_USER_QUERY);
+            while (resultSetFind.next()) {
+                resultId = resultSetFind.getLong("MAX(userId)");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        DbUtils.closeConnection(connection, statement, findStatement);
         return resultId;
     }
 
     @Override
     public Optional<User> findUserById(long userId) throws SQLException {
-        String preparedQuery = " SELECT * FROM users WHERE userId = " + userId + ";";
-        String userLogin = null, userNickName = null, aboutUser = null, dateBirth = null, dateRegister = null;
 
         Connection connection = DbUtils.getConnection();
-        Statement statement = connection.createStatement();
+        PreparedStatement statement = connection.prepareStatement(FIND_USER_QUERY);
+        statement.setLong(1, userId);
+        ResultSet resultSetFindQuery = statement.executeQuery();
 
-        ResultSet resultSet = statement.executeQuery(preparedQuery);
-        while (resultSet.next()) {
-            userLogin = resultSet.getString("login");
-            userNickName = resultSet.getString("nickName");
-            aboutUser = resultSet.getString("about");
-            dateBirth = resultSet.getString("dateOfBirth");
-            dateRegister = resultSet.getString("dateRegistered");
+        if (resultSetFindQuery.next()) {
+            String userLogin = resultSetFindQuery.getString("login");
+            String userNickName = resultSetFindQuery.getString("nickName");
+            String aboutUser = resultSetFindQuery.getString("about");
+            LocalDate dateBirth = LocalDate.parse(resultSetFindQuery.getString("dateOfBirth"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            LocalDate dateRegister = LocalDate.parse(resultSetFindQuery.getString("dateRegistered"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            DbUtils.closeConnection(connection, statement);
+            return Optional.of(createUser(userId, userLogin, userNickName, dateBirth, dateRegister, aboutUser));
+        } else {
+            DbUtils.closeConnection(connection, statement);
         }
-
-        DbUtils.closeConnection(connection, statement);
-        return Optional.of(createUser(userId, userLogin, userNickName, dateBirth, dateRegister, aboutUser));
+        return Optional.empty();
     }
 
-    User createUser(Long userId, String userLogin, String nickName, String dateOfBirth, String dateRegister, String about) {
-        return new User(userId, userLogin, nickName, LocalDate.parse(dateOfBirth), LocalDate.parse(dateRegister), about);
+    User createUser(Long userId, String userLogin, String nickName, LocalDate dateOfBirth, LocalDate dateRegister, String about) {
+        return new User(userId, userLogin, nickName, dateOfBirth, dateRegister, about);
     }
 
     @Override
     public List<User> getAll() throws SQLException {
 
-        String preparedQuery = "SELECT * FROM users";
-        String dateBirth, dateRegistered;
         List<User> userList = new ArrayList();
-
         Connection connection = DbUtils.getConnection();
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(preparedQuery);
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
 
         while (resultSet.next()) {
-            dateBirth = resultSet.getString("dateOfBirth");
-            dateRegistered = resultSet.getString("dataRegistered");
+            LocalDate dateBirth = LocalDate.parse(resultSet.getString("dateOfBirth"));
+            LocalDate dateRegistered = LocalDate.parse(resultSet.getString("dataRegistered"));
             Long userId = resultSet.getLong("userId");
             String login = resultSet.getString("login");
             String nickName = resultSet.getString("nickName");
             String aboutUser = resultSet.getString("about");
-
             userList.add(createUser(userId, login, nickName, dateBirth, dateRegistered, aboutUser));
         }
-
         DbUtils.closeConnection(connection, statement);
         return userList;
     }
@@ -92,7 +94,7 @@ public class UserDaoJdbcImpl implements UserDao {
     public void updateUser(User user) throws SQLException {
 
         Connection connection = DbUtils.getConnection();
-        PreparedStatement statement = connection.prepareStatement(updateUserQuery);
+        PreparedStatement statement = connection.prepareStatement(UPDATE_USER_QUERY);
         statement.setString(1, user.getNickName());
         statement.setString(2, String.valueOf(user.getDateRegister()));
         statement.setString(3, String.valueOf(user.getDateOfBirth()));
@@ -106,18 +108,18 @@ public class UserDaoJdbcImpl implements UserDao {
     @Override
     public boolean deleteUserById(long userId) throws SQLException {
 
-        String preparedQuery = "DELETE FROM users WHERE userId = " + userId + ";";
         Connection connection = DbUtils.getConnection();
-        Statement statement = connection.createStatement();
+        PreparedStatement deleteStatement = connection.prepareStatement(DELETE_USER_QUERY);
+        deleteStatement.setLong(1, userId);
 
-        if (statement.execute(preparedQuery)) {
-            TweetDao tweetDao = new TweetDaoJdbcImpl();
+        if (deleteStatement.execute(DELETE_USER_QUERY)) {
             tweetDao.deleteTweetById(userId);
-            ResultSet resultSet = statement.executeQuery(preparedQuery);
-            DbUtils.closeConnection(connection, statement);
-            return true;
+            int deletedRows = deleteStatement.executeUpdate();
+            DbUtils.closeConnection(connection, deleteStatement);
+            return deletedRows == 1;
         }
-        DbUtils.closeConnection(connection, statement);
+        DbUtils.closeConnection(connection, deleteStatement);
         return false;
     }
+
 }

@@ -6,52 +6,64 @@ import sm.diploma.persistance.TweetDao;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class TweetDaoJdbcImpl implements TweetDao {
 
-    private static final String insertTweetQuery = "INSERT INTO tweets (userId, referenceTweetId, datePosted, content) VALUES (?, ?, ?, ?);";
-    private static final String updateTweetQuery = "UPDATE  tweets SET datePosted = ?, content = ? WHERE tweetId = ?;";
+    private static final String INSERT_TWEET_QUERY = "INSERT INTO tweets (userId, referenceTweetId, datePosted, content) VALUES (?, ?, ?, ?);";
+    private static final String UPDATE_TWEET_QUERY = "UPDATE  tweets SET content = ? WHERE tweetId = ?;";
+    private static final String SELECT_MAX_ID = "SELECT MAX(tweetId) FROM tweets;";
+    private static final String FIND_TWEET_BY_ID = "SELECT * FROM tweets WHERE tweetId = ?;";
+    private static final String DELETE_TWEET_QUERY = "DELETE FROM tweets WHERE userId = ?;";
 
     @Override
-    public Long saveTweet(Tweet tweet) throws SQLException {
+    public Long saveTweet(Tweet tweet) {
 
-        String preparedQueryFind = "SELECT MAX(tweetId) FROM tweets;";
-        Connection connection = DbUtils.getConnection();
-        Statement findIdStatement = connection.createStatement();
-        PreparedStatement statement = connection.prepareStatement(insertTweetQuery);
-        statement.setLong(1, tweet.getUserId());
-        statement.setString(2, String.valueOf(tweet.getReferenceTweetId()));
-        statement.setString(3, String.valueOf(tweet.getDatePoster()));
-        statement.setString(4, tweet.getContent());
-        Integer resultSetAdd = statement.executeUpdate();
+        Long maxID = 0L;
+        try (Connection connection = DbUtils.getConnection();
+             Statement findIdStatement = connection.createStatement();
+             PreparedStatement insertStatement = connection.prepareStatement(INSERT_TWEET_QUERY);) {
+            insertStatement.setLong(1, tweet.getUserId());
+            insertStatement.setString(2, String.valueOf(tweet.getReferenceTweetId()));
+            insertStatement.setString(3, String.valueOf(tweet.getDatePosted()));
+            insertStatement.setString(4, tweet.getContent());
+            Integer affectedRows = insertStatement.executeUpdate();
+            ResultSet resultSetFind = findIdStatement.executeQuery(SELECT_MAX_ID);
 
-        ResultSet resultSetFind = findIdStatement.executeQuery(preparedQueryFind);
-        resultSetFind.next();
-        Long result = resultSetFind.getLong("MAX(tweetId)");
-        DbUtils.closeConnection(connection, statement, findIdStatement);
-        return result;
+            while (resultSetFind.next()) {
+                maxID = resultSetFind.getLong("MAX(tweetId)");
+            }
+            return maxID;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
     public Optional<Tweet> findTweetById(long tweetId) throws SQLException {
 
-        String preparedQuery = "SELECT * FROM tweets WHERE tweetId = " + tweetId + ";";
         Connection connection = DbUtils.getConnection();
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(preparedQuery);
-        resultSet.next();
-        Long referenceTweetId = resultSet.getLong("referenceTweetId");
-        String datePoster = resultSet.getString("datePosted");
-        Long userId = resultSet.getLong("userId");
-        String content = resultSet.getString("content");
+        PreparedStatement statement = connection.prepareStatement(FIND_TWEET_BY_ID);
+        statement.setLong(1, tweetId);
+        ResultSet resultFindQuery = statement.executeQuery();
 
-        DbUtils.closeConnection(connection, statement);
-        return Optional.of(createTweet(userId, tweetId, referenceTweetId, datePoster, content));
+        if (resultFindQuery.next()) {
+            Long referenceTweetId = resultFindQuery.getLong("referenceTweetId");
+            LocalDate datePosted = LocalDate.parse(resultFindQuery.getString("datePosted"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            Long userId = resultFindQuery.getLong("userId");
+            String content = resultFindQuery.getString("content");
+            DbUtils.closeConnection(connection, statement);
+            return Optional.of(createTweet(userId, tweetId, referenceTweetId, datePosted, content));
+        } else {
+            DbUtils.closeConnection(connection, statement);
+        }
+        return Optional.empty();
     }
 
-    Tweet createTweet(Long userId, Long tweetId, Long referenceTweetId, String datePosted, String content) {
-        return new Tweet(userId, tweetId, referenceTweetId, LocalDate.parse(datePosted), content);
+    Tweet createTweet(Long userId, Long tweetId, Long referenceTweetId, LocalDate datePosted, String content) {
+        return new Tweet(userId, tweetId, referenceTweetId, datePosted, content);
     }
 
     @Override
@@ -64,7 +76,7 @@ public class TweetDaoJdbcImpl implements TweetDao {
         ResultSet resultSet = statement.executeQuery(preparedQuery);
         while (resultSet.next()) {
             Long referenceTweetId = resultSet.getLong("referenceTweetId");
-            String datePoster = resultSet.getString("datePosted");
+            LocalDate datePoster = LocalDate.parse(resultSet.getString("datePosted"));
             Long userId = resultSet.getLong("userId");
             Long tweetId = resultSet.getLong("tweetId");
             String content = resultSet.getString("content");
@@ -78,10 +90,9 @@ public class TweetDaoJdbcImpl implements TweetDao {
     public void updateTweet(Tweet tweet) throws SQLException {
 
         Connection connection = DbUtils.getConnection();
-        PreparedStatement statement = connection.prepareStatement(updateTweetQuery);
-        statement.setString(1, String.valueOf(LocalDate.now()));
-        statement.setString(2, tweet.getContent());
-        statement.setLong(3, tweet.getTweetId());
+        PreparedStatement statement = connection.prepareStatement(UPDATE_TWEET_QUERY);
+        statement.setString(1, tweet.getContent());
+        statement.setLong(2, tweet.getTweetId());
         Integer resultSetAdd = statement.executeUpdate();
 
         DbUtils.closeConnection(connection, statement);
@@ -90,13 +101,13 @@ public class TweetDaoJdbcImpl implements TweetDao {
     @Override
     public boolean deleteTweetById(long userId) throws SQLException {
 
-        String preparedQuery = "DELETE FROM tweets WHERE userId = " + userId + ";";
         Connection connection = DbUtils.getConnection();
-        Statement statement = connection.createStatement();
-        if (statement.execute(preparedQuery)) {
-            ResultSet resultSet = statement.executeQuery(preparedQuery);
+        PreparedStatement statement = connection.prepareStatement(DELETE_TWEET_QUERY);
+
+        if (statement.execute(DELETE_TWEET_QUERY)) {
+            int deletedRows = statement.executeUpdate();
             DbUtils.closeConnection(connection, statement);
-            return true;
+            return deletedRows == 1;
         }
         DbUtils.closeConnection(connection, statement);
         return false;

@@ -10,7 +10,7 @@ import java.util.Set;
 
 public interface TweetDao {
 
-    Long saveTweet(Tweet tweet) throws SQLException;
+    Long saveTweet(Tweet tweet);
 
     Optional<Tweet> findTweetById(long tweetId) throws SQLException;
 

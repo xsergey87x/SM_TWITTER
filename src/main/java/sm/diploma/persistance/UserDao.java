@@ -8,9 +8,7 @@ import java.util.Optional;
 
 public interface UserDao {
 
-    Long save(User user) throws SQLException;
-
-    public Long getUserIDFromNickName(String nickName)  throws SQLException;
+    Long save(User user);
 
     Optional<User> findUserById(long userId) throws SQLException;
 

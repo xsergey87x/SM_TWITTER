@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class Tweet {
 
@@ -11,7 +12,6 @@ public class Tweet {
 
     private Long tweetId;
     private Long userId;
-    private Tweet referenceTweet;
     private Long referenceTweetId;
     private final LocalDate datePoster;
     private final String content;
@@ -19,10 +19,10 @@ public class Tweet {
     private List<User> likes;
     private List<Tweet> retweets;
 
-    public Tweet(Long userId, Tweet referenceTweet, String content) {
+    public Tweet(Long userId, Long referenceTweetId, String content) {
         this.tweetId = ++tweetSequence;
         this.userId = userId;
-        this.referenceTweet = referenceTweet;
+        this.referenceTweetId = referenceTweetId;
         this.datePoster = LocalDate.now();
         this.content = content;
         this.mentionedUsers = parseContentForMentions(content);
@@ -30,12 +30,10 @@ public class Tweet {
         this.retweets = new ArrayList<>();
     }
 
-    public Tweet(Long userId, Tweet referenceTweet, Long referenceTweetId, String content) {
-        this.tweetId = ++tweetSequence;
+    public Tweet(Long userId, Long referenceTweetId, LocalDate dataPoster, String content) {
         this.userId = userId;
-        this.referenceTweet = referenceTweet;
         this.referenceTweetId = referenceTweetId;
-        this.datePoster = LocalDate.now();
+        this.datePoster = dataPoster;
         this.content = content;
         this.mentionedUsers = parseContentForMentions(content);
         this.likes = new ArrayList<>();
@@ -46,7 +44,6 @@ public class Tweet {
         this.userId = userId;
         this.tweetId = tweetId;
         this.referenceTweetId = referenceTweetId;
-        this.referenceTweet = null;
         this.datePoster = dataPoster;
         this.content = content;
         this.mentionedUsers = parseContentForMentions(content);
@@ -57,8 +54,8 @@ public class Tweet {
     public Tweet(Tweet other) {
         this.tweetId = other.tweetId;
         this.userId = other.userId;
-        this.referenceTweet = other.referenceTweet;
         this.datePoster = other.datePoster;
+        this.referenceTweetId = other.referenceTweetId;
         this.content = other.content;
         this.mentionedUsers = other.mentionedUsers;
         this.likes = other.likes;
@@ -85,19 +82,11 @@ public class Tweet {
         this.userId = userId;
     }
 
-    public Tweet getReferenceTweet() {
-        return referenceTweet;
-    }
-
     public Long getReferenceTweetId() {
         return referenceTweetId;
     }
 
-    public void setReferenceTweet(Tweet referenceTweet) {
-        this.referenceTweet = referenceTweet;
-    }
-
-    public LocalDate getDatePoster() {
+    public LocalDate getDatePosted() {
         return datePoster;
     }
 
@@ -129,25 +118,13 @@ public class Tweet {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Tweet tweet = (Tweet) o;
-
-        if (tweetId != null ? !tweetId.equals(tweet.tweetId) : tweet.tweetId != null) return false;
-        if (!userId.equals(tweet.userId)) return false;
-        if (referenceTweet != null ? !referenceTweet.equals(tweet.referenceTweet) : tweet.referenceTweet != null)
-            return false;
-        if (!datePoster.equals(tweet.datePoster)) return false;
-        return content != null ? content.equals(tweet.content) : tweet.content == null;
+        return Objects.equals(tweetId, tweet.tweetId) && Objects.equals(userId, tweet.userId) && Objects.equals(referenceTweetId, tweet.referenceTweetId) && Objects.equals(datePoster, tweet.datePoster) && Objects.equals(content, tweet.content);
     }
 
     @Override
     public int hashCode() {
-        int result = tweetId != null ? tweetId.hashCode() : 0;
-        result = 31 * result + userId.hashCode();
-        result = 31 * result + (referenceTweet != null ? referenceTweet.hashCode() : 0);
-        result = 31 * result + datePoster.hashCode();
-        result = 31 * result + (content != null ? content.hashCode() : 0);
-        return result;
+        return Objects.hash(tweetId, userId, referenceTweetId, datePoster, content);
     }
 
     @Override
@@ -155,7 +132,6 @@ public class Tweet {
         return "Tweet{" +
                 "tweetId=" + tweetId +
                 ", userId=" + userId +
-                ", referenceTweet=" + referenceTweet +
                 ", referenceTweetId=" + referenceTweetId +
                 ", datePoster=" + datePoster +
                 ", content='" + content + '\'' +
