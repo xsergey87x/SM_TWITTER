@@ -14,7 +14,7 @@ import java.util.Optional;
 public class UserDaoJdbcImpl implements UserDao {
 
     private static final String INSERT_USER_QUERY = "INSERT INTO users (login, nickName, dateRegistered, dateOfBirth, about) VALUES (?, ?, ?, ?, ?);";
-    private static final String UPDATE_USER_QUERY = "UPDATE  users SET nickName = ?, dateRegistered = ?, dateOfBirth = ?, about = ? WHERE login = ?;";
+    private static final String UPDATE_USER_QUERY = "UPDATE  users SET nickName = ?, dateOfBirth = ?, about = ? WHERE login = ?;";
     private static final String SELECT_USER_QUERY = "SELECT MAX(userId) FROM users;";
     private static final String FIND_USER_QUERY = "SELECT * FROM users WHERE userId = ?;";
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE userId = ?;";
@@ -96,11 +96,10 @@ public class UserDaoJdbcImpl implements UserDao {
         Connection connection = DbUtils.getConnection();
         PreparedStatement statement = connection.prepareStatement(UPDATE_USER_QUERY);
         statement.setString(1, user.getNickName());
-        statement.setString(2, String.valueOf(user.getDateRegister()));
-        statement.setString(3, String.valueOf(user.getDateOfBirth()));
-        statement.setString(4, user.getAbout());
-        statement.setString(5, user.getUserLogin());
-        Integer resultSetAdd = statement.executeUpdate();
+        statement.setString(2, String.valueOf(user.getDateOfBirth()));
+        statement.setString(3, user.getAbout());
+        statement.setString(4, user.getUserLogin());
+        Integer updateUserSet = statement.executeUpdate();
 
         DbUtils.closeConnection(connection, statement);
     }
@@ -112,14 +111,9 @@ public class UserDaoJdbcImpl implements UserDao {
         PreparedStatement deleteStatement = connection.prepareStatement(DELETE_USER_QUERY);
         deleteStatement.setLong(1, userId);
 
-        if (deleteStatement.execute(DELETE_USER_QUERY)) {
-            tweetDao.deleteTweetById(userId);
-            int deletedRows = deleteStatement.executeUpdate();
-            DbUtils.closeConnection(connection, deleteStatement);
-            return deletedRows == 1;
-        }
+        tweetDao.deleteTweetById(userId);
+        int deletedRows = deleteStatement.executeUpdate(DELETE_USER_QUERY);
         DbUtils.closeConnection(connection, deleteStatement);
-        return false;
+        return deletedRows == 1;
     }
-
 }

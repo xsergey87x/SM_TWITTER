@@ -93,7 +93,7 @@ public class TweetDaoJdbcImpl implements TweetDao {
         PreparedStatement statement = connection.prepareStatement(UPDATE_TWEET_QUERY);
         statement.setString(1, tweet.getContent());
         statement.setLong(2, tweet.getTweetId());
-        Integer resultSetAdd = statement.executeUpdate();
+        Integer updateTweetSet = statement.executeUpdate();
 
         DbUtils.closeConnection(connection, statement);
     }
@@ -104,12 +104,8 @@ public class TweetDaoJdbcImpl implements TweetDao {
         Connection connection = DbUtils.getConnection();
         PreparedStatement statement = connection.prepareStatement(DELETE_TWEET_QUERY);
 
-        if (statement.execute(DELETE_TWEET_QUERY)) {
-            int deletedRows = statement.executeUpdate();
-            DbUtils.closeConnection(connection, statement);
-            return deletedRows == 1;
-        }
+        int deletedRows = statement.executeUpdate(DELETE_TWEET_QUERY);
         DbUtils.closeConnection(connection, statement);
-        return false;
+        return deletedRows == 1;
     }
 }
