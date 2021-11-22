@@ -1,44 +1,43 @@
 package sm.diploma;
 
+import sm.diploma.commanOption.ConfigurationApp;
+import sm.diploma.commanOption.Configurator;
 import sm.diploma.model.Tweet;
-import sm.diploma.model.TweetFeed;
 import sm.diploma.model.User;
-import sm.diploma.model.UserFeed;
+import sm.diploma.persistance.TweetDao;
 import sm.diploma.persistance.UserDao;
-import sm.diploma.persistance.UserDaoImplementation;
+import sm.diploma.persistance.jdbc.TweetDaoJdbcImpl;
+import sm.diploma.persistance.jdbc.UserDaoJdbcImpl;
 
-import java.lang.reflect.Array;
+import java.sql.*;
 import java.time.LocalDate;
-import java.util.Arrays;
 
 public class Test {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
 
-        User firstUser = new User("SM", LocalDate.of(1987, 5, 5), "Java students");
-        User secondUser = new User("Friends", LocalDate.of(1990, 3, 3), "Just students");
+        ///Configurator configurator = new Configurator();
+       ConfigurationApp config =  Configurator.createConfig(args);
+       if (config.getInitDb())
+       {
+           ConfigurationApp.initDb(config.getDaoType());
+       }
+       if (config.getPopulateDb())
+       {
+           ConfigurationApp.populateDb(config.getDaoType());
+       }
 
-        Tweet tweet = new Tweet(firstUser.getUserId(), null, "Nothing else matters");
-        Tweet tweetReply1 = new Tweet(secondUser.getUserId(), tweet, "Do something");
-        Tweet tweetReply2 = new Tweet(firstUser.getUserId(), tweetReply1, "I do");
+      //  UserDao userDaoJdbc = new UserDaoJdbcImpl();
+     //   User firstUser = new User("KEKLOL", "KKK",LocalDate.of(2009, 01, 23), "I am");
+     //   TweetDao tweetDaoJdbc = new TweetDaoJdbcImpl();
 
-        UserFeed firstUserFeed = new UserFeed(Arrays.asList(tweet, tweetReply2), firstUser.getUserId(), true);
-        TweetFeed firstUserTweetFeed = new TweetFeed(Arrays.asList(tweetReply1, tweetReply2), tweet.getTweetId());
+    //   Tweet tweet = new Tweet(1L, null, LocalDate.now(), "HELLO KEK");
+       // System.out.println(tweetDaoJdbc.saveTweet(tweet));
+        ///tweetDaoJdbc.deleteTweetById(2L);
+      //  System.out.println(tweetDaoJdbc.saveTweet(tweet));
+        System.out.println(" ____________________________________ ");
+        //System.out.println(userDaoJdbc.getAll());
 
-        System.out.println(firstUserFeed);
-        System.out.println(firstUserTweetFeed);
-
-        System.out.println("-----------------------------------");
-
-        UserDao userDao = new UserDaoImplementation();
-        userDao.save(firstUser);
-        userDao.save(secondUser);
-
-        firstUser.setAbout("Like cakes");
-
-        User oldFirstUser = userDao.findUserById(firstUser.getUserId()).get();
-
-        System.out.println(firstUser);
-        System.out.println(oldFirstUser);
+        //System.out.println("id: " + userList);
     }
 }
