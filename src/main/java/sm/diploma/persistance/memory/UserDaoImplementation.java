@@ -1,14 +1,18 @@
-package sm.diploma.persistance;
+package sm.diploma.persistance.memory;
 
 import sm.diploma.model.User;
+import sm.diploma.persistance.UserDao;
+import sm.diploma.persistance.UserDoesNotExistException;
 import sm.diploma.storage.Storage;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class UserDaoImplementation implements UserDao {
+
     @Override
     public Long save(User user) {
         long newUserId = ++Storage.userIdSequence;

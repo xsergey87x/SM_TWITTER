@@ -1,10 +1,13 @@
-package sm.diploma.persistance;
+package sm.diploma.persistance.memory;
 
 import sm.diploma.model.Tweet;
+import sm.diploma.persistance.TweetDao;
+import sm.diploma.persistance.TweetDoesNotExistException;
 import sm.diploma.storage.Storage;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class TweetDaoMemoryImplementation implements TweetDao {
     @Override
@@ -24,6 +27,11 @@ public class TweetDaoMemoryImplementation implements TweetDao {
             return Optional.of(resultTweet);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Set<Tweet> getAll() {
+        return null;
     }
 
     @Override
