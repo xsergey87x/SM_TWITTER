@@ -20,7 +20,7 @@ public class Configurator {
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
             ConfigurationApp config = ConfigurationApp.builder()
-                    .getDaoType(cmd.getOptionValues(DAO_TYPE))
+                    .getDaoType(cmd.getOptionValue(DAO_TYPE))
                     .isInitDb(cmd.hasOption(DB_INIT))
                     .isPopulateDb(cmd.hasOption(POPULATE_DB))
                     .build();
@@ -29,6 +29,8 @@ public class Configurator {
         } catch (ParseException e) {
             e.printStackTrace();
             System.exit(1);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
