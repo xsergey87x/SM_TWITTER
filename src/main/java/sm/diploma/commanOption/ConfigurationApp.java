@@ -73,6 +73,10 @@ public class ConfigurationApp extends Exception {
         return daoType.getValue();
     }
 
+    public DaoType getDaoTypeObject() {
+        return daoType;
+    }
+
     public boolean getInitDb() {
         return initDb;
     }

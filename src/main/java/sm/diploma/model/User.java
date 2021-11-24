@@ -38,7 +38,7 @@ public class User {
 
     }
 
-    public User(String userLogin,String nickName) {
+    public User(String userLogin, String nickName, LocalDate now, LocalDate localDate, String about) {
         this.userLogin = userLogin;
         this.nickName = nickName;
         this.dateRegister = LocalDate.now();
